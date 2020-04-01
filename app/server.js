@@ -26,19 +26,21 @@ app.set('views', path.join(__dirname, '../app/views'));
 // enable json message body for posting data to API
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+let ids = Object.keys(io.sockets.clients().connected);
 
-let pokerGame = new Game({id: randomID(), name: 'hey'});
+let pokerGame = new Game();
 
 // default index route
 app.get('/', (req, res) => {
-  res.send(pokerGame.players);
+  res.send(ids);
 });
 
 io.on('connection', (socket) => {
   // on first connection emit notes
-  Notes.getNotes().then((result) => {
-    socket.emit('notes', result);
-  });
+  pokerGame.addPlayer({id: socket.id, name: 'hey'});
+  ids = Object.keys(io.sockets.clients().connected);
+
+  console.log('howd',socket.id);
 
   // pushes notes to everybody
   const pushNotes = () => {
@@ -48,28 +50,8 @@ io.on('connection', (socket) => {
     });
   };
 
-  // creates notes and
-  socket.on('createNote', (fields) => {
-    Notes.createNote(fields).then((result) => {
-      pushNotes();
-    }).catch((error) => {
-      console.log(error);
-      socket.emit('error', 'create failed');
-    });
-  });
-
-  // on update note do what is needful
-  socket.on('updateNote', (id, fields) => {
-    Notes.updateNote(id, fields).then(() => {
-      pushNotes();
-    });
-  });
-
-  // / on deleteNote do what is needful
-  socket.on('deleteNote', (id) => {
-    Notes.deleteNote(id).then(() => {
-      pushNotes();
-    });
+  socket.on('connect', () => {
+    io.emit(ids);
   });
 });
 
