@@ -5,18 +5,14 @@ import cors from 'cors';
 import path from 'path';
 import socketio from 'socket.io';
 import http from 'http';
+import Game from './models/game';
+import {randomID} from './utils/helpers';
 import * as Notes from './controllers/note_controller';
 
 // add server and io initialization after app
 const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
-
-// DB Setup
-const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost/notes';
-mongoose.connect(mongoURI);
-// set mongoose promises to es6 default
-mongoose.Promise = global.Promise;
 
 // enable/disable cross origin resource sharing if necessary
 app.use(cors());
@@ -31,10 +27,11 @@ app.set('views', path.join(__dirname, '../app/views'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+let pokerGame = new Game({id: randomID(), name: 'hey'});
 
 // default index route
 app.get('/', (req, res) => {
-  res.send('hi');
+  res.send(pokerGame.players);
 });
 
 io.on('connection', (socket) => {
