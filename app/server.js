@@ -39,6 +39,7 @@ io.on('connection', (socket) => {
   // on first connection emit notes
   pokerGame.addPlayer({id: socket.id, name: 'hey'});
   ids = Object.keys(io.sockets.clients().connected);
+  socket.emit('users', ids);
 
   console.log('howd',socket.id);
 
